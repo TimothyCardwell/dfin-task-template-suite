@@ -1,0 +1,60 @@
+{
+    "manifestVersion": 1.0,
+    "id": "dfin-task-template-suite",
+    "version": "0.0.10",
+    "name": "Donnelley Financial Solutions Task Template Suite Extension",
+    "description": "TODO Fill this out",
+    "public": false,
+    "publisher": "TimCardwell",
+    "icons": {
+        "default": "static/images/dfin_logo.jpg"
+    },
+    "tags": [
+        "Task",
+        "Template",
+        "Templates",
+        "Suite"
+    ],
+    "categories": [
+        "Boards"
+    ],  
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "scopes": [
+        "vso.work", 
+        "vso.work_write"
+    ],
+    "files": [
+        {
+            "path": "dist",
+            "addressable": true
+        },
+        {
+            "path": "static",
+            "addressable": true
+        },
+        {
+            "path": "node_modules/vss-web-extension-sdk/lib",
+            "addressable": true,
+            "packagePath": "lib"
+        }        
+    ],
+    "contributions": [
+        {
+            "id": "dfin-task-template-suite-group",
+            "type": "ms.vss-work-web.work-item-form-group",
+            "description": "TODO Fill this out",
+            "targets": [
+                "ms.vss-work-web.work-item-form"
+            ],
+            "properties": {
+                "name": "Task Template Suite Group",
+                "uri": "static/task-template-suite-group.html",
+                "height": 600
+            }
+        }
+    ]
+}

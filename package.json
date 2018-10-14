@@ -1,0 +1,23 @@
+{
+  "name": "dfin-task-templates",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "postbuild": "npm run test",
+    "test": "echo \"No tests to run!\"",
+    "prepackage": "npm run build",
+    "package": "tfx extension create --rev-version",
+    "clean": "rimraf ./dist && rimraf ./*.vsix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "vss-web-extension-sdk": "^5.141.0"
+  },
+  "devDependencies": {
+    "rimraf": "^2.6.2"
+  }
+}
