@@ -12,10 +12,12 @@
 
         VSS.init({
             explicitNotifyLoaded: true,
-            usePlatformScripts: true
+            usePlatformScripts: true,
+            configureModuleLoader: true
         });
 
         VSS.require(["dist/app"], function (app) {
+            VSS.notifyLoadSucceeded();
             app.Log();
         });
 

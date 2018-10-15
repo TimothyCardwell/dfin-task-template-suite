@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1.0,
     "id": "dfin-task-template-suite",
-    "version": "0.0.10",
+    "version": "0.0.12",
     "name": "Donnelley Financial Solutions Task Template Suite Extension",
     "description": "TODO Fill this out",
     "public": false,
@@ -52,7 +52,7 @@
             ],
             "properties": {
                 "name": "Task Template Suite Group",
-                "uri": "static/task-template-suite-group.html",
+                "uri": "static/app.html",
                 "height": 600
             }
         }
