@@ -1,6 +1,36 @@
 import _WorkClient = require("TFS/Work/RestClient");
 import _WorkItemClient = require("TFS/WorkItemTracking/RestClient");
 import _WorkItemService = require("TFS/WorkItemTracking/Services");
+import 'jQuery';
+
+export function InitializeWorkItemGroup(): void {
+  const context = VSS.getWebContext();
+
+  $('#load-task-templates').click(evt => {
+    console.log(evt);
+
+    const workItemClient = GetWorkItemClient();
+    workItemClient.getTemplates(context.project.id, context.team.id)
+      .then(result => {
+        console.log("Successfully got templates");
+        console.log(result);
+
+        const taskSuiteTemplates = result.filter(x => x.workItemTypeName == "Task");
+      });
+  });
+
+  GetWorkItemService(context).then(workItemService => {
+    workItemService.getFields().then(fields => {
+      console.log(fields);
+      // If type != "User Story"
+        // Hide this group
+        VSS.notifyLoadSucceeded();
+    });
+  });
+  /*.catch(err => {
+    console.log(err);
+  });*/
+}
 
 export function Log(): void {
   console.log("Hooked up correctly!")
