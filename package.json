@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "postbuild": "npm run test",
-    "test": "echo \"No tests to run!\"",
-    "prepackage": "npm run build",
+    "pretest": "npm run build",
+    "test": "jasmine --config=./jasmine.json",
+    "prepackage": "npm run test",
     "package": "tfx extension create --rev-version",
     "clean": "rimraf ./dist && rimraf ./*.vsix",
     "publish": "echo \"See documentation around 'tfx gallery-publish'\" && exit 1"
@@ -19,6 +19,12 @@
     "vss-web-extension-sdk": "^5.141.0"
   },
   "devDependencies": {
-    "rimraf": "^2.6.2"
+    "@types/jasmine": "^2.8.9",
+    "jasmine": "^3.2.0",
+    "rimraf": "^2.6.2",
+    "tfx-cli": "^0.6.3",
+    "tslint": "^5.11.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^2.9.2"
   }
 }
