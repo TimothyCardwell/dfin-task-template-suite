@@ -5,10 +5,11 @@ import { Node } from "./node";
 import { Task } from "./task";
 import { TaskTree } from "./task-tree";
 
-let taskTree: TaskTree;
+let taskTreeMap: Map<string, TaskTree>;
 
 export function InitializeWorkItemGroup(): void {
     const context = VSS.getWebContext();
+    console.log(context);
 
     // Load templates
     LoadTaskSuite(context);
@@ -18,27 +19,21 @@ export function InitializeWorkItemGroup(): void {
 
     // Wire up dropdown onChange event handler
     $("#available-root-templates").change((evt) => {
-        const targetTreeNode = taskTree.RootNode.Children.find((child) => {
-            console.log(evt.target.nodeValue);
-            // tslint:disable-next-line:no-string-literal
-            return child.Task.Id === evt.target["value"];
-        });
-
+        const selectedTaskId = $("#available-root-templates").val() as string;
+        const targetTreeNode = taskTreeMap.get(selectedTaskId).RootNode;
         AddTasksToContainer(targetTreeNode);
     });
 
     // Wire up button onClick even handler
     $("#create-tasks-btn").click((evt) => {
         const workItemClient = _WorkItemClient.getClient();
+        // tslint:disable-next-line:max-line-length
         // TODO: See an example here: https://github.com/figueiredorui/1-click-child-links/blob/master/src/scripts/app.js
     });
 }
 
 function LoadTaskSuite(context: WebContext): void {
     const workItemClient = _WorkItemClient.getClient();
-
-    console.log(context);
-
     workItemClient.getTemplates(context.project.id, context.team.id, "Task").then((templates) => {
         const tasks: Task[] = [];
         for (const template of templates) {
@@ -46,19 +41,30 @@ function LoadTaskSuite(context: WebContext): void {
             tasks.push(task);
         }
 
-        taskTree = new TaskTree(tasks);
-        if (!taskTree.RootNode.IsLeafNode) {
-            for (const rootTask of taskTree.RootNode.Children) {
-                $("#available-root-templates").append(new Option(rootTask.Task.Name, rootTask.Task.Id));
-            }
+        taskTreeMap = new Map();
+        const rootTasks = tasks.filter((task) => {
+            return task.IsRootTask;
+        });
+
+        for (const rootTask of rootTasks) {
+            const subTasks = tasks.filter((task) => task.Path.startsWith(rootTask.Path) || task.Id === rootTask.Id);
+
+            // Build task suite for this task
+            taskTreeMap.set(rootTask.Id, new TaskTree(subTasks));
+
+            // Add root task to <select> element
+            $("#available-root-templates").append(new Option(rootTask.Name, rootTask.Id));
+        }
+        if (taskTreeMap.size > 0) {
+            const selectedTaskId = $("#available-root-templates").val() as string;
 
             // Show first set of tasks on page
-            AddTasksToContainer(taskTree.RootNode.Children[0]);
+            AddTasksToContainer(taskTreeMap.get(selectedTaskId).RootNode);
         } else {
             $("#sub-task-container").append("<div>No task templates setup for this team</div>");
         }
 
-        console.log(taskTree);
+        console.log(taskTreeMap);
     });
 }
 
@@ -68,7 +74,7 @@ function ShowGroupOnPage(context: WebContext): void {
         console.log(workItem);
         workItem.getFieldValue("Work Item Type").then((type) => {
             if (type !== "User Story") {
-                VSS.resize(0, 0);
+                VSS.resize(0, 0); // TODO Figure out how to unregister the extension
             }
 
             VSS.notifyLoadSucceeded();

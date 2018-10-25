@@ -18,3 +18,12 @@ Go over technical details
  - Jasmine (no karma), how to test?
  - Editorconfig
  - TSLint
+
+# TODO
+ - Add logic to create tasks from task templates
+ - Styling
+ - Add method comments
+ - Ensure tests cover functionality
+ - See if you can get multiple team's task templates loaded
+ - Get some images
+ - Finish this README

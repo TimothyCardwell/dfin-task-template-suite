@@ -3,18 +3,16 @@ import { Task } from "./task";
 
 export class TaskTree {
     public RootNode: Node;
-    private RootNodeId: string = "00000000-0000-0000-0000-000000000000";
-    private RootNodePath: string = "NotARealTask";
-    private RootNodeProject: string = "NotARealProject";
 
     constructor(tasks: Task[]) {
         if (!tasks) {
             throw new Error("Cannot build tree from an empty task list");
         }
 
-        // Initialize root node
-        const placeholderTask = new Task(this.RootNodeId, this.RootNodePath, this.RootNodeProject);
-        this.RootNode = new Node(placeholderTask);
+        // Specifically used for testing purposes, this can be removed if needed
+        if (tasks.length === 0) {
+            return;
+        }
 
         tasks = this.RemoveNonTaskSuiteTemplates(tasks);
         tasks = this.SortByColonCountAscending(tasks);
@@ -41,12 +39,19 @@ export class TaskTree {
     }
 
     public BuildTree(tasks: Task[]): void {
-        for (const task of tasks) {
+        if (!tasks[0].IsRootTask) {
+            throw new Error(`Ensure the task list is sorted correctly, and that the tasks were
+                created correctly. Cannot create tree because root node was not found`);
+        }
+
+        this.RootNode = new Node(tasks[0]);
+        for (let i = 1; i < tasks.length; i++) {
+            const task = tasks[i];
             if (task.IsRootTask) {
-                this.RootNode.AddChildNode(new Node(task));
-            } else {
-                this.AddTask(this.RootNode, task, -1);
+                throw new Error(`Duplicate root tasks found - ensure the task templates are setup correctly`);
             }
+
+            this.AddTask(this.RootNode, task, 0);
         }
     }
 
@@ -54,7 +59,7 @@ export class TaskTree {
         const colonCount = task.Path.match(/:/g).length;
 
         // Base case: we are at the right level, add the child node
-        if (currentLevel === colonCount - 1) {
+        if (currentLevel === colonCount - 1 && task.Path.startsWith(currentNode.Task.Path)) {
             currentNode.AddChildNode(new Node(task));
             return;
         }
@@ -63,11 +68,8 @@ export class TaskTree {
             return task.Path.startsWith(child.Task.Path);
         });
 
-        // This is hit when task templates are setup incorrectly (i.e. fat fingered the path), warn instead of error
-        // so that not everyone is affected
+        // Ignore any tasks that aren't part of this tree
         if (!nextNode) {
-            console.warn(`Cannot add task ${task.Path} to tree due to no matching parent.
-                    Closest parent path is ${currentNode.Task.Path}`);
             return;
         }
 
