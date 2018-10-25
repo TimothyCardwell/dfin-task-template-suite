@@ -7,7 +7,7 @@
     "build": "tsc -p .",
     "pretest": "npm run build",
     "test": "jasmine --config=./jasmine.json",
-    "prepackage": "npm run test",
+    "preepackage": "npm run test",
     "package": "tfx extension create --rev-version",
     "clean": "rimraf ./dist && rimraf ./*.vsix",
     "publish": "echo \"See documentation around 'tfx gallery-publish'\" && exit 1"

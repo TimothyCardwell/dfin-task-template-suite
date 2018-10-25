@@ -1,60 +1,99 @@
+import { WorkItemTemplateReference } from "TFS/WorkItemTracking/Contracts";
 import _WorkItemClient = require("TFS/WorkItemTracking/RestClient");
 import _WorkItemService = require("TFS/WorkItemTracking/Services");
-import { WorkItemTemplateReference } from "TFS/WorkItemTracking/Contracts";
+import { Node } from "./node";
+import { Task } from "./task";
+import { TaskTree } from "./task-tree";
 
-let availableTemplates: WorkItemTemplateReference[];
+let taskTree: TaskTree;
 
 export function InitializeWorkItemGroup(): void {
-  const context = VSS.getWebContext();
-  availableTemplates = [];
+    const context = VSS.getWebContext();
 
-  // Load templates
-  const workItemClient = GetWorkItemClient();
-  workItemClient.getTemplates(context.project.id, context.team.id, "Task")
-    .then(result => {
-      var rootTemplates = result.filter(x => x.name.startsWith('tt_'));
-      for(let rootTemplate of rootTemplates) {
-        const name = rootTemplate.name.slice(3);
+    // Load templates
+    LoadTaskSuite(context);
 
-        availableTemplates.push(rootTemplate);
+    // Load widget to user
+    ShowGroupOnPage(context);
 
-        const relatedTemplates = result.filter(t => t.name.startsWith(name));
-        console.log(relatedTemplates);
-        availableTemplates.push(...relatedTemplates);
+    // Wire up dropdown onChange event handler
+    $("#available-root-templates").change((evt) => {
+        const targetTreeNode = taskTree.RootNode.Children.find((child) => {
+            console.log(evt.target.nodeValue);
+            // tslint:disable-next-line:no-string-literal
+            return child.Task.Id === evt.target["value"];
+        });
 
-        $('#available-root-templates').append(`<option value="${rootTemplate.id}">${name}</option>`);
-      }
+        AddTasksToContainer(targetTreeNode);
     });
 
-  $('#available-root-templates').change(evt => {
-    $('#sub-task-container').empty();
-
-    const rootTemplate = availableTemplates.find(t => t.id == evt.target['value']);
-    const name = rootTemplate.name.slice(3);
-
-    const childTemplates = availableTemplates.filter(t => t.name.startsWith(name)).sort();
-    childTemplates.forEach(t => {
-      $('#sub-task-container').append(`<div>${t.name}</div>`)
+    // Wire up button onClick even handler
+    $("#create-tasks-btn").click((evt) => {
+        const workItemClient = _WorkItemClient.getClient();
+        // TODO: See an example here: https://github.com/figueiredorui/1-click-child-links/blob/master/src/scripts/app.js
     });
-  });
-
-  GetWorkItemService(context).then(workItemService => {
-    workItemService.getFieldValue('Work Item Type').then(type => {
-      console.log(type);
-
-      if (type != "User Story") {
-
-      }
-      
-      VSS.notifyLoadSucceeded();
-    });
-  });
 }
 
-function GetWorkItemService(context: WebContext): IPromise<_WorkItemService.IWorkItemFormService> {
-  return _WorkItemService.WorkItemFormService.getService(context);
+function LoadTaskSuite(context: WebContext): void {
+    const workItemClient = _WorkItemClient.getClient();
+
+    console.log(context);
+
+    workItemClient.getTemplates(context.project.id, context.team.id, "Task").then((templates) => {
+        const tasks: Task[] = [];
+        for (const template of templates) {
+            const task = new Task(template.id, template.name, context.project.id);
+            tasks.push(task);
+        }
+
+        taskTree = new TaskTree(tasks);
+        if (!taskTree.RootNode.IsLeafNode) {
+            for (const rootTask of taskTree.RootNode.Children) {
+                $("#available-root-templates").append(new Option(rootTask.Task.Name, rootTask.Task.Id));
+            }
+
+            // Show first set of tasks on page
+            AddTasksToContainer(taskTree.RootNode.Children[0]);
+        } else {
+            $("#sub-task-container").append("<div>No task templates setup for this team</div>");
+        }
+
+        console.log(taskTree);
+    });
 }
 
-function GetWorkItemClient(): _WorkItemClient.WorkItemTrackingHttpClient4_1 {
-  return _WorkItemClient.getClient()
+function ShowGroupOnPage(context: WebContext): void {
+    const workItemService = _WorkItemService.WorkItemFormService.getService(context);
+    workItemService.then((workItem) => {
+        console.log(workItem);
+        workItem.getFieldValue("Work Item Type").then((type) => {
+            if (type !== "User Story") {
+                VSS.resize(0, 0);
+            }
+
+            VSS.notifyLoadSucceeded();
+        });
+    });
+}
+
+function AddTasksToContainer(rootNode: Node): void {
+    $("#sub-task-container").empty();
+
+    const newListElement = $("<ul></ul>");
+    $("#sub-task-container").append(newListElement);
+    for (const childNode of rootNode.Children) {
+        AddTaskToContainer(childNode, newListElement);
+    }
+}
+
+function AddTaskToContainer(node: Node, parentElement: JQuery<HTMLElement>): void {
+    $(parentElement).append(`<li>${node.Task.Name}</li>`);
+
+    if (!node.IsLeafNode) {
+        const newListElement = $("<ul></ul>");
+        $(parentElement).append(newListElement);
+        for (const childNode of node.Children) {
+            AddTaskToContainer(childNode, newListElement);
+        }
+    }
 }
