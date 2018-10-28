@@ -1,3 +1,6 @@
+/**
+ * A more succinct representation of an Azure Devops task
+ */
 export class Task {
     public Id: string;
     public Name: string;

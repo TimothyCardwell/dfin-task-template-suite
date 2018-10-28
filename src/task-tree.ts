@@ -1,6 +1,9 @@
 import { Node } from "./node";
 import { Task } from "./task";
 
+/**
+ * A tree structure to organize task templates and their relationships
+ */
 export class TaskTree {
     public RootNode: Node;
     public TotalNodeCount: number;
@@ -20,10 +23,22 @@ export class TaskTree {
         this.BuildTree(tasks);
     }
 
+    /**
+     * This filters out any 'bad' tasks from the available task list. The only tasks that
+     * are considered part of a task tree are those with colon characters, or the root node
+     * itself. See the README for task naming conventions
+     * @param tasks The tasks to be used for this tree
+     */
     public RemoveNonTaskSuiteTemplates(tasks: Task[]): Task[] {
         return tasks.filter((task) => task.Path.includes(":") || task.IsRootTask);
     }
 
+    /**
+     * We can efficiently create the task tree by sorting the avaiable tasks by the number
+     * of colons they have in their names, since that effectively tells us which level of
+     * the tree that task is on
+     * @param tasks The tasks to be used for this tree
+     */
     public SortByColonCountAscending(tasks: Task[]): Task[] {
         return tasks.sort((task1, task2) => {
             const task1Colons = (task1.Path.match(/:/g) || []).length;
@@ -39,6 +54,11 @@ export class TaskTree {
         });
     }
 
+    /**
+     * Builds the tree with the supplied tasks. Make sure the task list has been validated and
+     * sorted
+     * @param tasks The tasks to be used for this tree
+     */
     public BuildTree(tasks: Task[]): void {
         if (!tasks[0].IsRootTask) {
             throw new Error(`Ensure the task list is sorted correctly, and that the tasks were
@@ -58,6 +78,12 @@ export class TaskTree {
         this.TotalNodeCount = tasks.length;
     }
 
+    /**
+     * This is a recursive function to add nodes to a tree
+     * @param currentNode The current node of the tree
+     * @param task The new task to create a new child node out of
+     * @param currentLevel The current level of the tree
+     */
     private AddTask(currentNode: Node, task: Task, currentLevel: number): void {
         const colonCount = task.Path.match(/:/g).length;
 

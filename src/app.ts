@@ -12,13 +12,16 @@ import { TaskTree } from "./task-tree";
 const TaskTreeMap: Map<string, TaskTree> = new Map();
 let CurrentWorkItem: WorkItem;
 
-// There is a more elegant solution to determine when tasks have been
-// created if you are familiar with promises... I am not
+// These are state variables that we need to keep track of
+// when tasks are being created
 let WorkItemsToUpdateCount: number = 0;
 let WorkItemsUpdatedCount: number  = 0;
 let CreatedTaskIds: number[];
 let WaitControl: StatusIndicator.WaitControl;
 
+/**
+ * Entry point method - used to initialize the extension
+ */
 export function InitializeWorkItemGroup(): void {
     const context = VSS.getWebContext();
 
@@ -52,6 +55,11 @@ export function InitializeWorkItemGroup(): void {
     });
 }
 
+/**
+ * Updates the template tree view with the newly selected root node and all
+ * its children
+ * @param rootNode The root node to add to the view
+ */
 function AddRootTaskToView(rootNode: Node): void {
     // Empty container
     $("#sub-task-container").empty();
@@ -62,7 +70,7 @@ function AddRootTaskToView(rootNode: Node): void {
 
     // Add each child to list element (will use recursion)
     for (const childNode of rootNode.Children) {
-        AddTasksToView(childNode, newListElement);
+        AddTaskToView(childNode, newListElement);
     }
 
     // Resize container
@@ -70,7 +78,12 @@ function AddRootTaskToView(rootNode: Node): void {
     VSS.resize(contentContainer.width(), contentContainer.height());
 }
 
-function AddTasksToView(node: Node, parentElement: JQuery<HTMLElement>): void {
+/**
+ * Recursive function to add task templates to the template tree view
+ * @param node The node to add to the view
+ * @param parentElement The parent element this node must be added to
+ */
+function AddTaskToView(node: Node, parentElement: JQuery<HTMLElement>): void {
     // Add task name to parent element
     $(parentElement).append(`<li>${node.Task.Name}</li>`);
 
@@ -79,11 +92,17 @@ function AddTasksToView(node: Node, parentElement: JQuery<HTMLElement>): void {
         const newListElement = $("<ul></ul>");
         $(parentElement).append(newListElement);
         for (const childNode of node.Children) {
-            AddTasksToView(childNode, newListElement);
+            AddTaskToView(childNode, newListElement);
         }
     }
 }
 
+/**
+ * Creates a new work item from the passed in node, and relates it to the passed in parent
+ * @param parentWorkItem The parent this new work item should be related to
+ * @param node The node to create a new work item out of
+ * @param context The curent web context
+ */
 function CreateTaskFromNode(parentWorkItem: any, node: Node, context: WebContext): void {
     const workItemClient = _WorkItemClient.getClient();
     workItemClient.getTemplate(context.project.id, context.team.id, node.Task.Id)
@@ -123,6 +142,10 @@ function CreateTaskFromNode(parentWorkItem: any, node: Node, context: WebContext
     });
 }
 
+/**
+ * Gets the work item details for the work item the user has open on the page
+ * @param context The current web context
+ */
 function GetCurrentWorkItem(context: WebContext): void {
     console.log("Loading work item form service...");
 
@@ -167,6 +190,13 @@ function GetCurrentWorkItem(context: WebContext): void {
     });
 }
 
+/**
+ * Creates a JSON Path Document by merging fields from the passed in work item and template. A default
+ * title is also passed in, as it's possible the template does not have a title
+ * @param workItem The parent work item to refer to for field values
+ * @param template The template with specific field values
+ * @param defaultTitle Default title
+ */
 function GetNewWorkItem(workItem: WorkItem, template: WorkItemTemplate, defaultTitle: string): JsonPatchDocument {
     const newWorkItem = [];
 
@@ -220,6 +250,10 @@ function GetNewWorkItem(workItem: WorkItem, template: WorkItemTemplate, defaultT
     return newWorkItem;
 }
 
+/**
+ * Retrieves all task tempaltes
+ * @param context The current web context
+ */
 function GetTaskTemplates(context: WebContext): void {
     console.log("Loading task templates...");
 
@@ -268,12 +302,21 @@ function GetTaskTemplates(context: WebContext): void {
         });
 }
 
+/**
+ * Handles any errors that may come up during work item creation by resetting
+ * the UI and reverting task creation
+ * @param error The error that occurred
+ */
 function HandleWorkItemCreationError(error: any): void {
     RevertTaskCreation();
     WaitControl.endWait();
     $("#widget-errors").text(`Failed to create task templates due to ${error.message}. Rolling back all changes.`);
 }
 
+/**
+ * Handles successful creation of a work item by updating the UI
+ * @param taskId The task id that was created
+ */
 function HandleWorkItemCreationSuccess(taskId: number): void {
     CreatedTaskIds.push(taskId);
     WorkItemsUpdatedCount = WorkItemsUpdatedCount + 1;
@@ -291,6 +334,10 @@ function HandleWorkItemCreationSuccess(taskId: number): void {
     }
 }
 
+/**
+ * Deletes all newly created tasks - used if an error occurs during task
+ * creation. (Default to rollback all)
+ */
 function RevertTaskCreation(): void {
     for (const taskId of CreatedTaskIds) {
         const workItemClient = _WorkItemClient.getClient();

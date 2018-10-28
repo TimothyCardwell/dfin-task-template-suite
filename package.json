@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "postbuild": "npm run package",
     "pretest": "npm run build",
     "test": "jasmine --config=./jasmine.json",
+    "prepackage": "npm run build",
     "package": "tfx extension create --rev-version",
     "clean": "rimraf ./dist && rimraf ./*.vsix",
     "publish": "echo \"See documentation around 'tfx gallery-publish'\" && exit 1"

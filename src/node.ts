@@ -1,5 +1,9 @@
 import { Task } from "./task";
 
+/**
+ * Represents a node on a task tree. Every node has an underlying task it represents, as well
+ * as a list of child nodes. If a node doesn't have any children, it is considered a leaf node.
+ */
 export class Node {
     public Task: Task;
     public Children: Node[];
@@ -15,6 +19,10 @@ export class Node {
         }
     }
 
+    /**
+     * Adds a child node to this node's children
+     * @param node The node to add
+     */
     public AddChildNode(node: Node): void {
         if (node == null) {
             throw new Error("Cannot create a child node with a null task");

@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1.0,
     "id": "dfin-task-templates",
-    "version": "0.0.72",
+    "version": "0.1.0",
     "name": "Donnelley Financial Solutions Task Templates Extension",
     "description": "TODO Fill this out",
     "public": false,
