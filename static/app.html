@@ -9,27 +9,35 @@
     <script src="../lib/VSS.SDK.min.js"></script>
 
     <script>
-
         VSS.init({
             explicitNotifyLoaded: true,
             usePlatformScripts: true,
             configureModuleLoader: true
         });
 
-        VSS.require(["dist/app"], function (app) {
-            app.InitializeWorkItemGroup();
+
+        VSS.ready(function() {
+            VSS.require(["dist/app"], function (app) {
+                console.log("require");
+                console.log(app);
+                app.InitializeWorkItemGroup();
+            })
         });
     </script>
 
-    <div id="task-suite-container">
-        <div id="task-selection-container">
-            <select id="available-root-templates"></select>
+    <div id="content" class="content">
+        <div id="task-only-message" class="hidden">Task templates can only be added to existing User Stories</div>
+        <div id="task-templates-container">
+            <div id="task-selection-container">
+                <label class="label">Available Task Templates: </label>
+                <select id="available-root-templates"></select>
+            </div>
+            <div id="sub-task-container"></div>
+
+            <button type="button" id="create-tasks-btn">Create Tasks</button>
         </div>
-        <div id="sub-task-container"></div>
-
-        <button id="create-tasks-btn">Create Tasks</button>
+        <div id="widget-errors"></div>
     </div>
-
 </body>
 
 </html>

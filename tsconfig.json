@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-      "module": "amd",
+      "module": "amd", // commonjs to run tests
       "moduleResolution": "node",
       "target": "es6",
       "rootDir": "src/",

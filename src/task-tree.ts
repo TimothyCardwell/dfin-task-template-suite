@@ -3,6 +3,7 @@ import { Task } from "./task";
 
 export class TaskTree {
     public RootNode: Node;
+    public TotalNodeCount: number;
 
     constructor(tasks: Task[]) {
         if (!tasks) {
@@ -53,6 +54,8 @@ export class TaskTree {
 
             this.AddTask(this.RootNode, task, 0);
         }
+
+        this.TotalNodeCount = tasks.length;
     }
 
     private AddTask(currentNode: Node, task: Task, currentLevel: number): void {

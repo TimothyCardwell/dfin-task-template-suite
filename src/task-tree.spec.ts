@@ -27,6 +27,21 @@ describe("task-tree", () => {
             expect(tree).toBeDefined();
             expect(tree.RootNode).toBeUndefined();
         });
+
+        it("should keep track of total node count", () => {
+            const taskList: Task[] = [];
+
+            // Level 1
+            taskList.push(new Task("00000000-0000-0000-0000-000000000001", "tt_TaskOne", "SampleProject"));
+
+            // Level 2
+            taskList.push(new Task("00000000-0000-0000-0000-000000000004", "TaskOne:SubTaskOne", "SampleProject"));
+            taskList.push(new Task("00000000-0000-0000-0000-000000000005", "TaskOne:SubTaskTwo", "SampleProject"));
+            taskList.push(new Task("00000000-0000-0000-0000-000000000006", "TaskOne:SubTaskThree", "SampleProject"));
+
+            const tree = new TaskTree(taskList);
+            expect(tree.TotalNodeCount).toEqual(4);
+        });
     });
 
     describe("can remove irrelevant task templates", () => {

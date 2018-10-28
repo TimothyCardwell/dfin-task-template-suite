@@ -5,6 +5,10 @@ Outline available NPM commands
 
 # Deployment Instructions
 Marketplace: https://marketplace.visualstudio.com/manage/publishers/TimCardwell
+1. Install/UPdate
+2. Share with organization
+3. Install in organization library (by going to marketplace -> shared with me)
+
 
 # General
 https://docs.microsoft.com/en-us/azure/devops/extend/overview
@@ -27,3 +31,5 @@ Go over technical details
  - See if you can get multiple team's task templates loaded
  - Get some images
  - Finish this README
+ - Cannot always chain .then
+ - Cannot use .catch
